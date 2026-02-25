@@ -17,7 +17,7 @@ jobs:
 
       - name: Publish .NET Project
         # ЗАМІНІТЬ MyBrowserGame.csproj на точну назву вашого файлу проекту!
-        run: dotnet publish MyBrowserGame.csproj -c Release -o release --nologo
+        run: dotnet publish TestBrowserGame.csproj -c Release -o release --nologo
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
