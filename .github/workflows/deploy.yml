@@ -1,0 +1,26 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [master, main]
+
+jobs:
+  deploy-to-github-pages:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: "10.0.x" # Або '9.0.x', якщо ви обрали 9-ту версію при створенні
+
+      - name: Publish .NET Project
+        # ЗАМІНІТЬ MyBrowserGame.csproj на точну назву вашого файлу проекту!
+        run: dotnet publish MyBrowserGame.csproj -c Release -o release --nologo
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./release/wwwroot
