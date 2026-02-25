@@ -1,0 +1,152 @@
+﻿@page "/"
+
+<div class="container mt-4" style="max-width: 600px;">
+    <h1 class="text-center">🌲 Міні-Виживач</h1>
+    <hr />
+
+    @if (isGameOver)
+    {
+        <div class="alert alert-danger text-center">
+            <h3>ГРА ЗАКІНЧЕНА</h3>
+            <p>Ви вижили днів: @day</p>
+            <button class="btn btn-warning" @onclick="RestartGame">Почати знову</button>
+        </div>
+    }
+    else
+    {
+        <div class="row mb-4">
+            <div class="col-6">
+                <h4>Статус:</h4>
+                <p>❤️ Здоров'я: <strong>@health / 100</strong></p>
+                <p>🍖 Голод: <strong>@hunger / 100</strong></p>
+                <p>☀️ День: <strong>@day</strong></p>
+            </div>
+            <div class="col-6">
+                <h4>Інвентар:</h4>
+                <p>🪵 Дерево: <strong>@wood</strong></p>
+                <p>🍎 Їжа: <strong>@food</strong></p>
+            </div>
+        </div>
+
+        <div class="d-grid gap-2 d-md-block mb-4">
+            <button class="btn btn-success me-2" @onclick="SearchFood">Шукати їжу</button>
+            <button class="btn btn-secondary me-2" @onclick="ChopWood">Рубати дерево</button>
+            <button class="btn btn-info me-2" @onclick="Eat" disabled="@(food <= 0)">Поїсти (1 🍎)</button>
+            <button class="btn btn-dark" @onclick="Sleep">Спати (Кінець дня)</button>
+        </div>
+    }
+
+    <div class="card bg-light">
+        <div class="card-body" style="height: 200px; overflow-y: auto;">
+            <h5 class="card-title">Лог подій:</h5>
+            <ul class="list-unstyled">
+                @foreach (var message in gameLog)
+                {
+                    <li>@message</li>
+                }
+            </ul>
+        </div>
+    </div>
+</div>
+
+@code {
+    // Характеристики гравця
+    private int health = 100;
+    private int hunger = 0;
+    private int day = 1;
+
+    // Інвентар
+    private int wood = 0;
+    private int food = 0;
+
+    // Стан гри
+    private bool isGameOver = false;
+    private List<string> gameLog = new List<string> { "Ви прокинулися в незнайомому лісі. Треба вижити." };
+
+    private Random rnd = new Random();
+
+    private void SearchFood()
+    {
+        int foundFood = rnd.Next(1, 4); // Знаходимо від 1 до 3 одиниць їжі
+        food += foundFood;
+        AddLog($"Ви знайшли {foundFood} 🍎. Трохи втомилися.");
+        IncreaseHunger(15);
+    }
+
+    private void ChopWood()
+    {
+        int foundWood = rnd.Next(2, 6);
+        wood += foundWood;
+        AddLog($"Ви нарубали {foundWood} 🪵. Це забрало багато сил.");
+        IncreaseHunger(25);
+    }
+
+    private void Eat()
+    {
+        if (food > 0)
+        {
+            food--;
+            hunger -= 30;
+            if (hunger < 0) hunger = 0;
+
+            // Якщо їмо, трохи лікуємось
+            health += 10;
+            if (health > 100) health = 100;
+
+            AddLog("Ви з'їли 🍎. Голод зменшився, здоров'я покращилось.");
+        }
+    }
+
+    private void Sleep()
+    {
+        day++;
+        AddLog($"--- Почався день {day} ---");
+
+        // Вночі теж хочеться їсти
+        IncreaseHunger(20);
+
+        if (hunger >= 100)
+        {
+            health -= 30;
+            AddLog("⚠️ Ви дуже голодні! Здоров'я падає через виснаження.");
+        }
+
+        CheckGameOver();
+    }
+
+    private void IncreaseHunger(int amount)
+    {
+        hunger += amount;
+        if (hunger > 100) hunger = 100;
+        CheckGameOver();
+    }
+
+    private void CheckGameOver()
+    {
+        if (health <= 0)
+        {
+            health = 0;
+            isGameOver = true;
+        }
+    }
+
+    private void AddLog(string message)
+    {
+        // Додаємо нове повідомлення на початок списку
+        gameLog.Insert(0, message);
+        // Зберігаємо лише останні 30 повідомлень, щоб не перевантажувати пам'ять
+        if (gameLog.Count > 30) gameLog.RemoveAt(30);
+    }
+
+    private void RestartGame()
+    {
+        health = 100;
+        hunger = 0;
+        day = 1;
+        wood = 0;
+        food = 0;
+        isGameOver = false;
+        gameLog.Clear();
+        gameLog.Add("Ви знову прокинулися в лісі. Спроба номер два.");
+    }
+}
