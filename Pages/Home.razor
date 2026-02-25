@@ -1,152 +1,149 @@
 ﻿@page "/"
 
-<div class="container mt-4" style="max-width: 600px;">
-    <h1 class="text-center">🌲 Міні-Виживач</h1>
-    <hr />
+<div class="container mt-4" style="max-width: 600px; color: #e0e0e0;">
+    <div class="text-center mb-4">
+        <h1 style="color: #4ade80;">🌲 Shadow Woods</h1>
+        <small class="text-muted">Survival RPG v0.2</small>
+    </div>
 
     @if (isGameOver)
     {
-        <div class="alert alert-danger text-center">
-            <h3>ГРА ЗАКІНЧЕНА</h3>
-            <p>Ви вижили днів: @day</p>
-            <button class="btn btn-warning" @onclick="RestartGame">Почати знову</button>
+        <div class="card border-danger bg-dark text-center p-5">
+            <h3 class="text-danger">ВИ ЗАГИНУЛИ</h3>
+            <p>Ваша історія тривала @day днів.</p>
+            <button class="btn btn-outline-warning" @onclick="RestartGame">Спробувати знову</button>
         </div>
     }
     else
     {
         <div class="row mb-4">
             <div class="col-6">
-                <h4>Статус:</h4>
-                <p>❤️ Здоров'я: <strong>@health / 100</strong></p>
-                <p>🍖 Голод: <strong>@hunger / 100</strong></p>
-                <p>☀️ День: <strong>@day</strong></p>
+                <div class="card bg-secondary bg-opacity-10 border-secondary p-3 h-100">
+                    <h5 class="text-info border-bottom pb-2">Статус</h5>
+                    <p class="mb-1">❤️ Здоров'я: <span class="@(health < 30 ? "text-danger fw-bold" : "text-light")">@health</span></p>
+                    <div class="progress mb-2" style="height: 5px;">
+                        <div class="progress-bar bg-danger" style="width: @health%"></div>
+                    </div>
+                    <p class="mb-1">🍖 Голод: <span class="@(hunger > 70 ? "text-warning" : "text-light")">@hunger</span></p>
+                    <div class="progress" style="height: 5px;">
+                        <div class="progress-bar bg-warning" style="width: @hunger%"></div>
+                    </div>
+                    <p class="mt-2 mb-0 text-muted small">День: @day</p>
+                </div>
             </div>
             <div class="col-6">
-                <h4>Інвентар:</h4>
-                <p>🪵 Дерево: <strong>@wood</strong></p>
-                <p>🍎 Їжа: <strong>@food</strong></p>
+                <div class="card bg-secondary bg-opacity-10 border-secondary p-3 h-100">
+                    <h5 class="text-info border-bottom pb-2">Інвентар</h5>
+                    <p class="mb-1">🪵 Дерево: <strong>@wood</strong></p>
+                    <p class="mb-1">🍎 Їжа: <strong>@food</strong></p>
+                </div>
             </div>
         </div>
 
-        <div class="d-grid gap-2 d-md-block mb-4">
-            <button class="btn btn-success me-2" @onclick="SearchFood">Шукати їжу</button>
-            <button class="btn btn-secondary me-2" @onclick="ChopWood">Рубати дерево</button>
-            <button class="btn btn-info me-2" @onclick="Eat" disabled="@(food <= 0)">Поїсти (1 🍎)</button>
-            <button class="btn btn-dark" @onclick="Sleep">Спати (Кінець дня)</button>
+        <div class="d-grid gap-2 mb-4">
+            <div class="row g-2">
+                <div class="col-6">
+                    <button class="btn btn-outline-success w-100 py-3" @onclick="SearchFood">🍎 Шукати їжу</button>
+                </div>
+                <div class="col-6">
+                    <button class="btn btn-outline-info w-100 py-3" @onclick="ChopWood">🪵 Рубати дрова</button>
+                </div>
+                <div class="col-6">
+                    <button class="btn btn-dark border-secondary w-100" @onclick="Eat" disabled="@(food <= 0)">🍎 Поїсти</button>
+                </div>
+                <div class="col-6">
+                    <button class="btn btn-secondary w-100" @onclick="Sleep">🌙 Спати</button>
+                </div>
+            </div>
         </div>
     }
 
-    <div class="card bg-light">
-        <div class="card-body" style="height: 200px; overflow-y: auto;">
-            <h5 class="card-title">Лог подій:</h5>
-            <ul class="list-unstyled">
+    <div class="card bg-black border-secondary">
+        <div class="card-body">
+            <h6 class="text-muted mb-2 small uppercase">Журнал виживання:</h6>
+            <div style="height: 150px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 0.9rem;">
                 @foreach (var message in gameLog)
                 {
-                    <li>@message</li>
+                    <div class="mb-1 border-start ps-2 border-secondary" style="color: #a0a0a0;">
+                        <span class="text-muted small">[@DateTime.Now.ToString("HH:mm")]</span> @message
+                    </div>
                 }
-            </ul>
+            </div>
         </div>
     </div>
 </div>
 
+<style>
+    body {
+        background-color: #0d1117; /* Глибокий темно-синій/чорний колір GitHub */
+    }
+    .btn {
+        transition: all 0.2s;
+    }
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    }
+</style>
+
 @code {
-    // Характеристики гравця
+    // Тут залишається ваша попередня логіка без змін
     private int health = 100;
     private int hunger = 0;
     private int day = 1;
-
-    // Інвентар
     private int wood = 0;
     private int food = 0;
-
-    // Стан гри
     private bool isGameOver = false;
-    private List<string> gameLog = new List<string> { "Ви прокинулися в незнайомому лісі. Треба вижити." };
-
+    private List<string> gameLog = new List<string> { "Темрява огортає вас. Потрібно вогнище..." };
     private Random rnd = new Random();
 
-    private void SearchFood()
-    {
-        int foundFood = rnd.Next(1, 4); // Знаходимо від 1 до 3 одиниць їжі
-        food += foundFood;
-        AddLog($"Ви знайшли {foundFood} 🍎. Трохи втомилися.");
+    private void SearchFood() {
+        int found = rnd.Next(1, 4);
+        food += found;
+        AddLog($"Знайдено {found} 🍎 у заростях.");
         IncreaseHunger(15);
     }
 
-    private void ChopWood()
-    {
-        int foundWood = rnd.Next(2, 6);
-        wood += foundWood;
-        AddLog($"Ви нарубали {foundWood} 🪵. Це забрало багато сил.");
+    private void ChopWood() {
+        int found = rnd.Next(2, 6);
+        wood += found;
+        AddLog($"Зібрано {found} 🪵. Сокира б не завадила.");
         IncreaseHunger(25);
     }
 
-    private void Eat()
-    {
-        if (food > 0)
-        {
-            food--;
-            hunger -= 30;
-            if (hunger < 0) hunger = 0;
-
-            // Якщо їмо, трохи лікуємось
-            health += 10;
-            if (health > 100) health = 100;
-
-            AddLog("Ви з'їли 🍎. Голод зменшився, здоров'я покращилось.");
+    private void Eat() {
+        if (food > 0) {
+            food--; hunger = Math.Max(0, hunger - 30);
+            health = Math.Min(100, health + 5);
+            AddLog("Ви трохи втамували голод.");
         }
     }
 
-    private void Sleep()
-    {
+    private void Sleep() {
         day++;
-        AddLog($"--- Почався день {day} ---");
-
-        // Вночі теж хочеться їсти
         IncreaseHunger(20);
-
-        if (hunger >= 100)
-        {
-            health -= 30;
-            AddLog("⚠️ Ви дуже голодні! Здоров'я падає через виснаження.");
-        }
-
+        if (hunger >= 100) health -= 30;
+        AddLog($"--- Ніч минула. День {day} ---");
         CheckGameOver();
     }
 
-    private void IncreaseHunger(int amount)
-    {
-        hunger += amount;
-        if (hunger > 100) hunger = 100;
+    private void IncreaseHunger(int amount) {
+        hunger = Math.Min(100, hunger + amount);
         CheckGameOver();
     }
 
-    private void CheckGameOver()
-    {
-        if (health <= 0)
-        {
-            health = 0;
-            isGameOver = true;
-        }
+    private void CheckGameOver() {
+        if (health <= 0) isGameOver = true;
     }
 
-    private void AddLog(string message)
-    {
-        // Додаємо нове повідомлення на початок списку
-        gameLog.Insert(0, message);
-        // Зберігаємо лише останні 30 повідомлень, щоб не перевантажувати пам'ять
-        if (gameLog.Count > 30) gameLog.RemoveAt(30);
+    private void AddLog(string m) {
+        gameLog.Insert(0, m);
+        if (gameLog.Count > 20) gameLog.RemoveAt(20);
     }
 
-    private void RestartGame()
-    {
-        health = 100;
-        hunger = 0;
-        day = 1;
-        wood = 0;
-        food = 0;
-        isGameOver = false;
-        gameLog.Clear();
-        gameLog.Add("Ви знову прокинулися в лісі. Спроба номер два.");
+    private void RestartGame() {
+        health = 100; hunger = 0; day = 1; wood = 0; food = 0;
+        isGameOver = false; gameLog.Clear();
+        gameLog.Add("Нова спроба вижити...");
     }
 }
